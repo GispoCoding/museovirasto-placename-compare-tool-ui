@@ -1,6 +1,8 @@
 # museovirasto-yso-nimiarkisto
 
-> Prototyping YSO-paikat enriching with the nimiarkisto.fi data
+> Prototyping <a href="http://finto.fi/yso-paikat/fi/">YSO-paikat</a> enriching with the <a href="https://nimiarkisto.fi/">nimiarkisto.fi</a> data
+
+Web-UI for a tool that helps to compare data from various place name & ontology services
 
 ## Build Setup
 
