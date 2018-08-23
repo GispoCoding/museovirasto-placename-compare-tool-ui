@@ -1,4 +1,4 @@
-# museovirasto-yso-nimiarkisto
+# museovirasto-placename-compare-tool-ui
 
 > Prototyping <a href="http://finto.fi/yso-paikat/fi/">YSO-paikat</a> enriching with the <a href="https://nimiarkisto.fi/">nimiarkisto.fi</a> data
 
