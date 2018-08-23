@@ -5,7 +5,7 @@
         <button @click="findTopic">Hae</button>
         <div class="results">
             <div class="yso-paikat-results">
-                <h2>YSO</h2>
+                <h2>YSO-paikat</h2>
                 <table class="results-table" v-show="ysoResults.length > 0">
                     <tr>
                         <th>Termi</th>
@@ -86,7 +86,7 @@ export default {
 
             this.axios.request(requestConfig).
                 then(function (response) {
-                    //console.log(response.data);
+                    console.log(response.data);
                     _this.nimiarkistoResults.labels = response.data.labels;
 
                     var dataDetails = [];
@@ -114,7 +114,8 @@ export default {
                 },
                 params: {
                     query: nameInputValue + "*",
-                    lang: "fi"
+                    lang: "fi",
+                    unique: "true"
                 }
             };
 
@@ -333,6 +334,9 @@ export default {
             }
             else if (placeType == "Municipality, urban area") {
                 text = "kunta, kaupunki";
+            }
+            else if (placeType == "Watercourse") {
+                text = "virtavesi";
             }
 
             return text;
