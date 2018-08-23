@@ -2,7 +2,9 @@
 
 > Prototyping <a href="http://finto.fi/yso-paikat/fi/">YSO-paikat</a> enriching with the <a href="https://nimiarkisto.fi/">nimiarkisto.fi</a> data
 
-Web-UI for a tool that helps to compare data from various place name & ontology services
+Web-UI for a tool that helps to compare data from various place name & ontology services.
+
+To try it, install and run it with the npm as explained below, do the same for the <a href="https://github.com/GispoCoding/museovirasto-placename-compare-tool-backend">backend</a> and then head with the web browser to the <a href="http://localhost:8080">http://localhost:8080</a>.
 
 ## Build Setup
 
