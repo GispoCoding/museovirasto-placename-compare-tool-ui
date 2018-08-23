@@ -4,7 +4,7 @@
 
 Web-UI for a tool that helps to compare data from various place name & ontology services.
 
-To try it, install and run it with the npm as explained below, do the same for the <a href="https://github.com/GispoCoding/museovirasto-placename-compare-tool-backend">backend</a> and then head with the web browser to the <a href="http://localhost:8080">http://localhost:8080</a>.
+To try it, at first install the backend as explained in <a href="https://github.com/GispoCoding/museovirasto-placename-compare-tool-backend">backend</a>, then install and run this frontend with the npm as explained below, and then head with the web browser to the <a href="http://localhost:8080">http://localhost:8080</a>.
 
 ## Build Setup
 
