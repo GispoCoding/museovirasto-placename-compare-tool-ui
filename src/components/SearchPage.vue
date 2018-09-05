@@ -4,42 +4,47 @@
         <input id="findNameInput" v-model="nameInputValue" type="text">
         <button @click="findTopic">Hae</button>
         <div class="results">
-            <div class="yso-paikat-results">
+            <div class="results-part">
                 <h2>YSO-paikat</h2>
-                <table class="results-table" v-show="ysoResults.length > 0">
-                    <tr>
-                        <th>Termi</th>
-                        <th>MML-koordinaatit</th>
-                        <th>MML-paikanlaji</th>
-                        <th>Osa käsitettä</th>
-                        <th>Huom.</th>
-                    </tr>
-                    <tr v-for="result in ysoResults" :key="result.localname + result.lang">
-                        <td><a :href="result.uri" target="_blank">{{ result.prefLabel }}</a></td>
-                        <td>{{ result.coordinateText }}</td>
-                        <td>{{ result.placeType }}</td>
-                        <td><a :href="result.broader.url" target="_blank">{{ result.broader.name }}</a></td>
-                        <td>{{ result.note }}</td>
-                    </tr>
-                </table>
+                <ul class="results-list" v-show="ysoResults.length > 0">
+                    <li class="results-list-item" v-for="result in ysoResults" :key="result.localname + result.lang">
+                        <ul class="results-list-item-list">
+                            <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="result.uri" target="_blank"><b>{{ result.prefLabel }}</b></a></div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Koordinaatit:</div><div class="results-list-item-value">{{ result.coordinateText }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Paikanlaji:</div><div class="results-list-item-value">{{ result.placeType }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Osa käsitettä:</div><div class="results-list-item-value"><a :href="result.broader.url" target="_blank">{{ result.broader.name }}</a></div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Huom:</div><div class="results-list-item-value">{{ result.note }}</div></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
             <div class="vertical-divider"></div>
-            <div class="nimiarkisto-results">
+            <div class="results-part">
                 <h2>Nimiarkisto</h2>
-                <table class="results-table" v-show="nimiarkistoResults.dataDetails.length > 0">
-                    <tr>
-                        <th>Termi</th>
-                        <th>Koordinaatit</th>
-                        <th>Paikanlaji</th>
-                        <th>Tekn info URL</th>
-                    </tr>
-                    <tr v-for="result in nimiarkistoResults.dataDetails" :key="result.id">
-                        <td><a :href="'https://nimiarkisto.fi/wiki/' + result.id" target="_blank">{{ result.labels.fi.value }}</a></td>
-                        <td>{{ getNimiarkistoCoordinates(result) }}</td>
-                        <td>{{ getCollectedPlaceType(result) }}</td>
-                        <td><a :href="'https://nimiarkisto.fi/wiki/' + result.title" target="_blank">{{ result.title }}</a></td>
-                    </tr>
-                </table>
+                <ul class="results-list" v-show="nimiarkistoResults.dataDetails.length > 0">
+                    <li class="results-list-item" v-for="result in nimiarkistoResults.dataDetails" :key="result.id">
+                        <ul class="results-list-item-list">
+                            <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="'https://nimiarkisto.fi/wiki/' + result.id" target="_blank"><b>{{ result.labels.fi.value }}</b></a></div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Koordinaatit:</div><div class="results-list-item-value">{{ getNimiarkistoCoordinates(result) }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Paikanlaji:</div><div class="results-list-item-value">{{ getNimiarkistoCollectedPlaceType(result) }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Tekn info URL:</div><div class="results-list-item-value"><a :href="'https://nimiarkisto.fi/wiki/' + result.title" target="_blank">{{ result.title }}</a></div></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="vertical-divider"></div>
+            <div class="results-part">
+                <h2>MML</h2>
+                <ul class="results-list" v-show="nlsResults.length > 0">
+                    <li class="results-list-item" v-for="result in nlsResults" :key="'p' + result.paikkaid">
+                        <ul class="results-list-item-list">
+                            <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="'http://paikkatiedot.fi/so/1000772/' + result.paikkaid" target="_blank"><b>{{ result.kirjoitusasu }}</b></a></div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Koordinaatit:</div><div class="results-list-item-value">{{ getNLSCoordinates(result) }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Paikanlaji:</div><div class="results-list-item-value">{{ getNLSCollectedPlaceType(result) }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Kunta:</div><div class="results-list-item-value">{{ result.kunta }}</div></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
         </div>
   </div>
@@ -59,6 +64,7 @@ export default {
                 labels: []
             },
             ysoResults: [],
+            nlsResults: []
         }
     },
     methods: {
@@ -70,9 +76,9 @@ export default {
 
             this.searchFromNimiarkisto(this.nameInputValue);
             this.searchFromFinto(this.nameInputValue);
-            this.searchFromMML(this.nameInputValue);
+            this.searchFromNLS(this.nameInputValue);
         },
-        searchFromMML(nameInputValue) {
+        searchFromNLS(nameInputValue) {
             var _this = this;
             
             var requestConfig = {
@@ -86,8 +92,11 @@ export default {
 
             this.axios.request(requestConfig).
                 then(function (response) {
-                    console.log(response.data);
-                    console.log(JSON.parse(response.data[0].geom));
+                    // console.log(response.data);
+                    // for (var i = 0; i < response.data.length; i++) {
+                    //     console.log(response.data[i].paikkaid);
+                    // }
+                    _this.nlsResults = response.data;
                 });
         },
         searchFromNimiarkisto (nameInputValue) {
@@ -105,7 +114,7 @@ export default {
 
             this.axios.request(requestConfig).
                 then(function (response) {
-                    console.log(response.data);
+                    //console.log(response.data);
                     _this.nimiarkistoResults.labels = response.data.labels;
 
                     var dataDetails = [];
@@ -149,16 +158,16 @@ export default {
                             lat: null,
                             lon: null
                         }
-                        results[i].coordinateText = "";
+                        results[i].coordinateText = "-";
 
                         results[i].broader = {
                             name: "",
                             url: ""   
                         };
 
-                        results[i].note = "";
+                        results[i].note = "-";
 
-                        results[i].placeType = "";
+                        results[i].placeType = "-";
 
                         results[i].prefLabels = {
                             fi: "",
@@ -190,7 +199,7 @@ export default {
             }
             return text;
         },
-        getCollectedPlaceType(item) {
+        getNimiarkistoCollectedPlaceType(item) {
             var text = "";
 
             if (item.claims.P10016 != undefined) {
@@ -208,6 +217,16 @@ export default {
             }
 
             return coordText;
+        },
+        getNLSCoordinates (item) {
+            var coordText = "";
+            coordText = item.geom.coordinates[0] + ", " + item.geom.coordinates[1];
+            return coordText;
+        },
+        getNLSCollectedPlaceType(item) {
+            var text = "";
+            text = item.paikkatyyppi.toLowerCase() + "; " + item.paikkatyyppiryhma.toLowerCase();
+            return text;
         },
         createYSODetails(item) {
             var _this = this;
@@ -278,7 +297,9 @@ export default {
                             _this.ysoResults[i].broader.name = broader;
                             _this.ysoResults[i].broader.url = broaderURL;
 
-                            _this.ysoResults[i].note = note;
+                            if (note != null) {
+                                _this.ysoResults[i].note = note;
+                            }
 
                             _this.ysoResults[i].labels = labels;
 
@@ -371,19 +392,38 @@ export default {
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
+
 }
 
-.results-table {
+.results-list {
+    list-style: none;
     margin: auto;
-    border-collapse: separate; 
-    border-spacing: 0 1em;
+    text-align: left;
+    padding: 0px;
 }
 
-.yso-paikat-results {
-    flex: 1 1 50%;
+.results-list-item-list {
+    list-style: none;
+    margin: auto;
+    text-align: left;
+     padding: 0px;
+}
+
+.results-list-item {
+    padding-bottom: 20px;
+}
+
+.results-list-item-list-item {
+    padding-bottom: 2px;
     display: flex;
-    align-self: flex-start;
-    flex-direction: column;
+}
+
+.results-list-item-head {
+    flex: 0 0 34%;
+}
+
+.results-list-item-value {
+    flex: 0 0 66%;
 }
 
 .vertical-divider {
@@ -392,12 +432,18 @@ export default {
     background: rgb(0, 0, 0);
 }
 
-.nimiarkisto-results {
-    flex: 1 1 50%;
+.results-part {
+    flex: 1 1 33%;
     display: flex;
     align-self: flex-start;
     flex-direction: column;
+    padding: 0px;
 }
 
+.results-table {
+    margin: auto;
+    border-collapse: separate; 
+    border-spacing: 0 1em;
+}
 
 </style>
