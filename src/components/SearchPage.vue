@@ -70,6 +70,25 @@ export default {
 
             this.searchFromNimiarkisto(this.nameInputValue);
             this.searchFromFinto(this.nameInputValue);
+            this.searchFromMML(this.nameInputValue);
+        },
+        searchFromMML(nameInputValue) {
+            var _this = this;
+            
+            var requestConfig = {
+                baseURL: BASE_URL,
+                url: "/mml",
+                method: "get",
+                params: {
+                    text: nameInputValue,
+                }
+            };
+
+            this.axios.request(requestConfig).
+                then(function (response) {
+                    console.log(response.data);
+                    console.log(JSON.parse(response.data[0].geom));
+                });
         },
         searchFromNimiarkisto (nameInputValue) {
             
