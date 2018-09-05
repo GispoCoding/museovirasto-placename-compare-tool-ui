@@ -1,27 +1,36 @@
 <template>
   <div class="search-page">
         <label for="findNameInput">Nimi:</label>
-        <input id="findNameInput" v-model="nameInputValue" type="text">
+        <input id="findNameInput" v-model="nameInputValue" type="text" @keyup.enter="findTopic">
         <button @click="findTopic">Hae</button>
         <div class="results">
             <div class="results-part">
                 <h2>YSO-paikat</h2>
-                <ul class="results-list" v-show="ysoResults.length > 0">
+                <GridLoader class="loader" :loading="loadingYSOData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
+                <ul class="results-list" v-if="ysoResults.length > 0">
                     <li class="results-list-item" v-for="result in ysoResults" :key="result.localname + result.lang">
                         <ul class="results-list-item-list">
                             <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="result.uri" target="_blank"><b>{{ result.prefLabel }}</b></a></div></li>
                             <li class="results-list-item-list-item"><div class="results-list-item-head">Koordinaatit:</div><div class="results-list-item-value">{{ result.coordinateText }}</div></li>
                             <li class="results-list-item-list-item"><div class="results-list-item-head">Paikanlaji:</div><div class="results-list-item-value">{{ result.placeType }}</div></li>
-                            <li class="results-list-item-list-item"><div class="results-list-item-head">Osa käsitettä:</div><div class="results-list-item-value"><a :href="result.broader.url" target="_blank">{{ result.broader.name }}</a></div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Osa käsitettä:</div><div class="results-list-item-value">
+                                    <a v-if="result.broader.name != '-'" :href="result.broader.url" target="_blank">{{ result.broader.name }}</a>
+                                    <span v-else>{{ result.broader.name }}</span>
+                                </div>
+                            </li>
                             <li class="results-list-item-list-item"><div class="results-list-item-head">Huom:</div><div class="results-list-item-value">{{ result.note }}</div></li>
                         </ul>
                     </li>
                 </ul>
+                <div v-else-if="!loadingYSOData">
+                    -
+                </div>
             </div>
             <div class="vertical-divider"></div>
             <div class="results-part">
                 <h2>Nimiarkisto</h2>
-                <ul class="results-list" v-show="nimiarkistoResults.dataDetails.length > 0">
+                <GridLoader class="loader" :loading="loadingNimiarkistoData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
+                <ul class="results-list" v-if="nimiarkistoResults.dataDetails.length > 0">
                     <li class="results-list-item" v-for="result in nimiarkistoResults.dataDetails" :key="result.id">
                         <ul class="results-list-item-list">
                             <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="'https://nimiarkisto.fi/wiki/' + result.id" target="_blank"><b>{{ result.labels.fi.value }}</b></a></div></li>
@@ -31,11 +40,15 @@
                         </ul>
                     </li>
                 </ul>
+                <div v-else-if="!loadingNimiarkistoData">
+                    -
+                </div>
             </div>
             <div class="vertical-divider"></div>
             <div class="results-part">
                 <h2>MML</h2>
-                <ul class="results-list" v-show="nlsResults.length > 0">
+                <GridLoader class="loader" :loading="loadingNLSData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
+                <ul class="results-list" v-if="nlsResults.length > 0">
                     <li class="results-list-item" v-for="result in nlsResults" :key="'p' + result.paikkaid">
                         <ul class="results-list-item-list">
                             <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="'http://paikkatiedot.fi/so/1000772/' + result.paikkaid" target="_blank"><b>{{ result.kirjoitusasu }}</b></a></div></li>
@@ -45,6 +58,9 @@
                         </ul>
                     </li>
                 </ul>
+                <div v-else-if="!loadingNLSData">
+                    -
+                </div>
             </div>
         </div>
   </div>
@@ -54,8 +70,13 @@
 
 const BASE_URL = "http://localhost:3000/"
 
+import GridLoader from 'vue-spinner/src/GridLoader.vue'
+
 export default {
     name: 'SearchPage',
+    components: {
+        GridLoader
+    },
     data () {
         return {
             nameInputValue: "Helsin",
@@ -64,7 +85,12 @@ export default {
                 labels: []
             },
             ysoResults: [],
-            nlsResults: []
+            nlsResults: [],
+            vueSpinnerSize: '16px',
+            vueSpinnerColor: '#800b8f',
+            loadingYSOData: false,
+            loadingNimiarkistoData: false,
+            loadingNLSData: false
         }
     },
     methods: {
@@ -79,8 +105,11 @@ export default {
             this.searchFromNLS(this.nameInputValue);
         },
         searchFromNLS(nameInputValue) {
+            
             var _this = this;
             
+            this.loadingNLSData = true;
+
             var requestConfig = {
                 baseURL: BASE_URL,
                 url: "/mml",
@@ -96,12 +125,16 @@ export default {
                     // for (var i = 0; i < response.data.length; i++) {
                     //     console.log(response.data[i].paikkaid);
                     // }
+                     _this.loadingNLSData = false;
+
                     _this.nlsResults = response.data;
                 });
         },
         searchFromNimiarkisto (nameInputValue) {
             
             var _this = this;
+
+            this.loadingNimiarkistoData = true;
             
             var requestConfig = {
                 baseURL: BASE_URL,
@@ -126,12 +159,16 @@ export default {
                         }
                     });
 
+                    _this.loadingNimiarkistoData = false;
+
                     _this.nimiarkistoResults.dataDetails = dataDetails;
                 });
         },
         searchFromFinto (nameInputValue) {
 
             var _this = this;
+
+            this.loadingYSOData = true;
 
             var requestConfig = {
                 baseURL: "http://api.finto.fi/",
@@ -158,16 +195,16 @@ export default {
                             lat: null,
                             lon: null
                         }
-                        results[i].coordinateText = "-";
+                        results[i].coordinateText = "";
 
                         results[i].broader = {
                             name: "",
                             url: ""   
                         };
 
-                        results[i].note = "-";
+                        results[i].note = "";
 
-                        results[i].placeType = "-";
+                        results[i].placeType = "";
 
                         results[i].prefLabels = {
                             fi: "",
@@ -175,6 +212,8 @@ export default {
                             sv: ""
                         }
                     }
+
+                    _this.loadingYSOData = false;
 
                     _this.ysoResults = results;
 
@@ -184,6 +223,7 @@ export default {
 
                 }).catch(error => {
                     console.log(error);
+                    _this.loadingYSOData = false;
                 });
 
         },
@@ -209,7 +249,7 @@ export default {
             return text;
         },
         getNimiarkistoCoordinates (item) {
-            var coordText = "";
+            var coordText = "-";
 
             if (item.claims.P10012 != undefined) {
                 var value = item.claims.P10012[0].mainsnak.datavalue.value;
@@ -294,11 +334,21 @@ export default {
 
                     for (var i = 0; i < _this.ysoResults.length; i++) {
                         if (item.uri == _this.ysoResults[i].uri) {
-                            _this.ysoResults[i].broader.name = broader;
-                            _this.ysoResults[i].broader.url = broaderURL;
+                            if (broader != null) {
+                                _this.ysoResults[i].broader.name = broader;
+                            }
+                            else {
+                                _this.ysoResults[i].broader.name = "-";
+                            }
+                            if (broaderURL != null) {
+                                _this.ysoResults[i].broader.url = broaderURL;
+                            }
 
                             if (note != null) {
                                 _this.ysoResults[i].note = note;
+                            }
+                            else {
+                                _this.ysoResults[i].note = "-";
                             }
 
                             _this.ysoResults[i].labels = labels;
@@ -338,22 +388,37 @@ export default {
                             then(function (response) {
                                  //console.log(response.data);
 
-                                 if (response.data != null) {
-                                     var coordText = response.data.geo.longitude + ", " + response.data.geo.latitude;
-                                     
-                                     for (var i = 0; i < _this.ysoResults.length; i++) {
-                                         if (item.uri == _this.ysoResults[i].uri) {
+                                for (var i = 0; i < _this.ysoResults.length; i++) {
+                                    if (item.uri == _this.ysoResults[i].uri) {
+
+                                        var coordText = "-";
+                                        if (response.data != null) {
+                                             coordText = response.data.geo.longitude + ", " + response.data.geo.latitude;
+                                        
 
                                             _this.ysoResults[i].placeType = _this.getNLSPlaceType(response.data);
 
-                                             _this.ysoResults[i].coordinates.lon = response.data.geo.longitude;
-                                             _this.ysoResults[i].coordinates.lat = response.data.geo.latitude;
-                                              _this.ysoResults[i].coordinateText = coordText;
-                                             break;
-                                         }
-                                     }
-                                 }
+                                            _this.ysoResults[i].coordinates.lon = response.data.geo.longitude;
+                                            _this.ysoResults[i].coordinates.lat = response.data.geo.latitude;
+                                        }
+
+                                        _this.ysoResults[i].coordinateText = coordText;
+                                        break;
+                                    }
+                                }
                         });
+                    }
+                    else {
+                        for (var i = 0; i < _this.ysoResults.length; i++) {
+                            if (item.uri == _this.ysoResults[i].uri) {
+                                var coordText = "-";
+                                _this.ysoResults[i].coordinateText = coordText;
+
+                                _this.ysoResults[i].placeType = "-";
+
+                                break;
+                            }
+                        }
                     }
 
                 }).catch(error => {
@@ -388,12 +453,17 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 
+
 .results {
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
-
 }
+
+.loader {
+    margin: auto;    
+}
+
 
 .results-list {
     list-style: none;
