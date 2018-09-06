@@ -1,14 +1,11 @@
 <template>
   <div class="search-page">
-        <label for="findNameInput">Nimi:</label>
-        <input id="findNameInput" v-model="nameInputValue" type="text" @keyup.enter="findTopic">
-        <button @click="findTopic">Hae</button>
         <div class="results">
             <div class="results-part">
                 <h2>YSO-paikat</h2>
-                <GridLoader class="loader" :loading="loadingYSOData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
-                <ul class="results-list" v-if="ysoResults.length > 0">
-                    <li class="results-list-item" v-for="result in ysoResults" :key="result.localname + result.lang">
+                <GridLoader class="loader" :loading="placeNames.loadingYSOData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
+                <ul class="results-list" v-if="placeNames.ysoResults.length > 0">
+                    <li class="results-list-item" v-for="result in placeNames.ysoResults" :key="result.localname + result.lang">
                         <ul class="results-list-item-list">
                             <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="result.uri" target="_blank"><b>{{ result.prefLabel }}</b></a></div></li>
                             <li class="results-list-item-list-item"><div class="results-list-item-head">Koordinaatit:</div><div class="results-list-item-value">{{ result.coordinateText }}</div></li>
@@ -22,16 +19,16 @@
                         </ul>
                     </li>
                 </ul>
-                <div v-else-if="!loadingYSOData">
+                <div v-else-if="!placeNames.loadingYSOData">
                     -
                 </div>
             </div>
             <div class="vertical-divider"></div>
             <div class="results-part">
                 <h2>Nimiarkisto</h2>
-                <GridLoader class="loader" :loading="loadingNimiarkistoData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
-                <ul class="results-list" v-if="nimiarkistoResults.dataDetails.length > 0">
-                    <li class="results-list-item" v-for="result in nimiarkistoResults.dataDetails" :key="result.id">
+                <GridLoader class="loader" :loading="placeNames.loadingNimiarkistoData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
+                <ul class="results-list" v-if="placeNames.nimiarkistoResults.dataDetails.length > 0">
+                    <li class="results-list-item" v-for="result in placeNames.nimiarkistoResults.dataDetails" :key="result.id">
                         <ul class="results-list-item-list">
                             <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="'https://nimiarkisto.fi/wiki/' + result.id" target="_blank"><b>{{ result.labels.fi.value }}</b></a></div></li>
                             <li class="results-list-item-list-item"><div class="results-list-item-head">Koordinaatit:</div><div class="results-list-item-value">{{ getNimiarkistoCoordinates(result) }}</div></li>
@@ -40,16 +37,16 @@
                         </ul>
                     </li>
                 </ul>
-                <div v-else-if="!loadingNimiarkistoData">
+                <div v-else-if="!placeNames.loadingNimiarkistoData">
                     -
                 </div>
             </div>
             <div class="vertical-divider"></div>
             <div class="results-part">
                 <h2>MML</h2>
-                <GridLoader class="loader" :loading="loadingNLSData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
-                <ul class="results-list" v-if="nlsResults.length > 0">
-                    <li class="results-list-item" v-for="result in nlsResults" :key="'p' + result.paikkaid">
+                <GridLoader class="loader" :loading="placeNames.loadingNLSData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
+                <ul class="results-list" v-if="placeNames.nlsResults.length > 0">
+                    <li class="results-list-item" v-for="result in placeNames.nlsResults" :key="'p' + result.paikkaid">
                         <ul class="results-list-item-list">
                             <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="'http://paikkatiedot.fi/so/1000772/' + result.paikkaid" target="_blank"><b>{{ result.kirjoitusasu }}</b></a></div></li>
                             <li class="results-list-item-list-item"><div class="results-list-item-head">Koordinaatit:</div><div class="results-list-item-value">{{ getNLSCoordinates(result) }}</div></li>
@@ -58,17 +55,24 @@
                         </ul>
                     </li>
                 </ul>
-                <div v-else-if="!loadingNLSData">
+                <div v-else-if="!placeNames.loadingNLSData">
                     -
                 </div>
             </div>
+        </div>
+        <div class="footer">
+            <p>Hyödyntää:</p>
+            <ul class="attribution">
+                <li class="attribution-item">Maanmittauslaitoksen paikannimi-aineistoa, Maanmittauslaitos, 08/2018, <a href="https://www.maanmittauslaitos.fi/avoindata-lisenssi-cc40" target="_blank">CC-BY-4.0</a></li>
+                <li class="attribution-item">Finton <a href="http://finto.fi/yso-paikat/fi/" target="_blank">YSO-paikkojen</a> aineistoja</li>
+                <li class="attribution-item">Kotimaisten kielten keskuksen <a href="https://nimiarkisto.fi/" target="_blank">nimiarkisto.fi</a>-aineistoja</li>
+                <li class="attribution-item"><a href="https://mapicons.mapsmarker.com/" target="_blank"><img class="size-full wp-image-1381 alignnone" title="miclogo-88x31" src="/static/images/mapiconscollection-markers/miclogo-88x31.gif" alt="" width="88" height="31"></a></li>
+            </ul>
         </div>
   </div>
 </template>
 
 <script>
-
-const BASE_URL = "http://localhost:3000/"
 
 import GridLoader from 'vue-spinner/src/GridLoader.vue'
 
@@ -79,159 +83,21 @@ export default {
     },
     data () {
         return {
-            nameInputValue: "Helsin",
-            nimiarkistoResults: {
-                dataDetails: [],
-                labels: []
-            },
-            ysoResults: [],
-            nlsResults: [],
             vueSpinnerSize: '16px',
             vueSpinnerColor: '#800b8f',
-            loadingYSOData: false,
-            loadingNimiarkistoData: false,
-            loadingNLSData: false
+        }
+    },
+    computed: {
+        placeNames () {
+            return this.$store.state.placeNames;
         }
     },
     methods: {
-        findTopic (event) {
-
-            this.nimiarkistoResults.dataDetails = [];
-            this.nimiarkistoResults.dataDetails.labels = [];
-            this.ysoResults = [];
-
-            this.searchFromNimiarkisto(this.nameInputValue);
-            this.searchFromFinto(this.nameInputValue);
-            this.searchFromNLS(this.nameInputValue);
-        },
-        searchFromNLS(nameInputValue) {
-            
-            var _this = this;
-            
-            this.loadingNLSData = true;
-
-            var requestConfig = {
-                baseURL: BASE_URL,
-                url: "/mml",
-                method: "get",
-                params: {
-                    text: nameInputValue,
-                }
-            };
-
-            this.axios.request(requestConfig).
-                then(function (response) {
-                    // console.log(response.data);
-                    // for (var i = 0; i < response.data.length; i++) {
-                    //     console.log(response.data[i].paikkaid);
-                    // }
-                     _this.loadingNLSData = false;
-
-                    _this.nlsResults = response.data;
-                });
-        },
-        searchFromNimiarkisto (nameInputValue) {
-            
-            var _this = this;
-
-            this.loadingNimiarkistoData = true;
-            
-            var requestConfig = {
-                baseURL: BASE_URL,
-                url: "/nimiarkisto",
-                method: "get",
-                params: {
-                    text: nameInputValue,
-                }
-            };
-
-            this.axios.request(requestConfig).
-                then(function (response) {
-                    //console.log(response.data);
-                    _this.nimiarkistoResults.labels = response.data.labels;
-
-                    var dataDetails = [];
-
-                    response.data.dataDetails.forEach(dataDetail => {
-                       
-                        if (dataDetail.claims.P10025 != undefined && dataDetail.claims.P10025[0].mainsnak.datavalue.value.id == "Q10") {
-                            dataDetails.push(dataDetail);
-                        }
-                    });
-
-                    _this.loadingNimiarkistoData = false;
-
-                    _this.nimiarkistoResults.dataDetails = dataDetails;
-                });
-        },
-        searchFromFinto (nameInputValue) {
-
-            var _this = this;
-
-            this.loadingYSOData = true;
-
-            var requestConfig = {
-                baseURL: "http://api.finto.fi/",
-                url: "/rest/v1/yso-paikat/search",
-                method: "get",
-                headers: {
-                    "Accept": "application/json"
-                },
-                params: {
-                    query: nameInputValue + "*",
-                    lang: "fi",
-                    unique: "true"
-                }
-            };
-
-            this.axios.request(requestConfig).
-                then(function (response) {
-                    //console.log(response.data);
-
-                    var results = response.data.results;
-
-                    for (var i = 0; i < results.length; i++) {
-                        results[i].coordinates = {
-                            lat: null,
-                            lon: null
-                        }
-                        results[i].coordinateText = "";
-
-                        results[i].broader = {
-                            name: "",
-                            url: ""   
-                        };
-
-                        results[i].note = "";
-
-                        results[i].placeType = "";
-
-                        results[i].prefLabels = {
-                            fi: "",
-                            en: "",
-                            sv: ""
-                        }
-                    }
-
-                    _this.loadingYSOData = false;
-
-                    _this.ysoResults = results;
-
-                    _this.ysoResults.forEach(element => {
-                        _this.createYSODetails(element);
-                    });
-
-                }).catch(error => {
-                    console.log(error);
-                    _this.loadingYSOData = false;
-                });
-
-        },
         getInstanceOf (item) {
             var text = "";
             var id = item.claims.P31[0].mainsnak.datavalue.value.id;
-            for (var i = 0; i < this.nimiarkistoResults.labels.length; i++) {
-                var label = this.nimiarkistoResults.labels[i];
+            for (var i = 0; i < this.placeNames.nimiarkistoResults.labels.length; i++) {
+                var label = this.placeNames.nimiarkistoResults.labels[i];
                 if (id == label.id) {
                     text = label.labels.fi.value;
                     break;
@@ -268,184 +134,6 @@ export default {
             text = item.paikkatyyppi.toLowerCase() + "; " + item.paikkatyyppiryhma.toLowerCase();
             return text;
         },
-        createYSODetails(item) {
-            var _this = this;
-
-            var requestConfig = {
-                baseURL: "http://api.finto.fi/",
-                url: "/rest/v1/yso-paikat/data",
-                method: "get",
-                headers: {
-                    "Accept": "application/json"
-                },
-                params: {
-                    uri: item.uri
-                }
-            };
-
-            this.axios.request(requestConfig).
-                then(function (response) {
-
-                    var closeMatch = null;
-                    var broader = null;
-                    var broaderURL = null;
-                    var note = null;
-                    var labels = {
-                        fi: null,
-                        sv: null,
-                        en: null
-                    }
-
-                    for (var i = 0; i < response.data.graph.length; i++) {
-                        if (response.data.graph[i].narrower != undefined &&
-                            response.data.graph[i].narrower.uri == item.uri) {
-                                //console.log("broader found");
-                            for (var j = 0; j < response.data.graph[i].prefLabel.length; j++) {
-                                if (response.data.graph[i].prefLabel[j].lang == "fi") {
-                                    broader = response.data.graph[i].prefLabel[j].value;
-                                    broaderURL = response.data.graph[i].uri;
-                                    break;
-                                }
-                            }
-                        }
-                        if (response.data.graph[i].uri == item.uri) {
-                            if (response.data.graph[i]["skos:closeMatch"] != undefined) {
-                                // For getting coordinates below
-                                closeMatch = response.data.graph[i]["skos:closeMatch"];
-                            }
-                            if (response.data.graph[i]["skos:note"] != undefined) {
-                                //console.log(response.data.graph[i]["skos:note"]);
-                                for (var j = 0; j < response.data.graph[i]["skos:note"].length; j++) {
-                                    if (response.data.graph[i]["skos:note"][j].lang == "fi") {
-                                        note = response.data.graph[i]["skos:note"][j].value;
-                                        break;
-                                    }
-                                }
-                            }
-                            for (var j = 0; j < response.data.graph[i].prefLabel.length; j++) {
-                                labels[response.data.graph[i].prefLabel[j].lang] = response.data.graph[i].prefLabel[j].value;
-                            }
-                        }
-                    }
-
-                    //
-                    // Set broader, note and labels
-                    //
-
-                    for (var i = 0; i < _this.ysoResults.length; i++) {
-                        if (item.uri == _this.ysoResults[i].uri) {
-                            if (broader != null) {
-                                _this.ysoResults[i].broader.name = broader;
-                            }
-                            else {
-                                _this.ysoResults[i].broader.name = "-";
-                            }
-                            if (broaderURL != null) {
-                                _this.ysoResults[i].broader.url = broaderURL;
-                            }
-
-                            if (note != null) {
-                                _this.ysoResults[i].note = note;
-                            }
-                            else {
-                                _this.ysoResults[i].note = "-";
-                            }
-
-                            _this.ysoResults[i].labels = labels;
-
-                            break;
-                        }
-                    }
-
-                    //
-                    // Get coordinates
-                    //
-
-                    //console.log(closeMatch);
-
-                    var paikkatiedotURI = null;
-                    for (var i = 0; closeMatch.length; i++) {
-                        if (closeMatch[i].uri.indexOf("paikkatiedot.fi") != -1) {
-                            //console.log(closeMatch[i].uri);
-                            if (closeMatch[i].uri.indexOf("paikkatiedot.fi/so/") != -1) {
-                                paikkatiedotURI = closeMatch[i].uri;
-                            }
-                            break;
-                        }
-                    }
-
-                    if (paikkatiedotURI != null) {
-                        var requestConfig = {
-                            baseURL: BASE_URL,
-                            url: "/paikkatiedot",
-                            method: "get",
-                            params: {
-                                paikkatiedotURI: paikkatiedotURI
-                            }
-                        };
-
-                        _this.axios.request(requestConfig).
-                            then(function (response) {
-                                 //console.log(response.data);
-
-                                for (var i = 0; i < _this.ysoResults.length; i++) {
-                                    if (item.uri == _this.ysoResults[i].uri) {
-
-                                        var coordText = "-";
-                                        if (response.data != null) {
-                                             coordText = response.data.geo.longitude + ", " + response.data.geo.latitude;
-                                        
-
-                                            _this.ysoResults[i].placeType = _this.getNLSPlaceType(response.data);
-
-                                            _this.ysoResults[i].coordinates.lon = response.data.geo.longitude;
-                                            _this.ysoResults[i].coordinates.lat = response.data.geo.latitude;
-                                        }
-
-                                        _this.ysoResults[i].coordinateText = coordText;
-                                        break;
-                                    }
-                                }
-                        });
-                    }
-                    else {
-                        for (var i = 0; i < _this.ysoResults.length; i++) {
-                            if (item.uri == _this.ysoResults[i].uri) {
-                                var coordText = "-";
-                                _this.ysoResults[i].coordinateText = coordText;
-
-                                _this.ysoResults[i].placeType = "-";
-
-                                break;
-                            }
-                        }
-                    }
-
-                }).catch(error => {
-                    console.log(error);
-                });
-        },
-        getNLSPlaceType(data) {
-            var start = data.description.indexOf(':') + 2;
-            var end = data.description.indexOf('in NLS Finland') - 1;
-            var placeType = data.description.substring(start, end);
-
-            var text = placeType;
-            if (placeType == "Village, district or neighbourhood") {
-                text = "kylä, kaupunginosa tai kulmakunta";
-            }
-            else if (placeType == "Island") {
-                text = "saari";
-            }
-            else if (placeType == "Municipality, urban area") {
-                text = "kunta, kaupunki";
-            }
-            else if (placeType == "Watercourse") {
-                text = "virtavesi";
-            }
-
-            return text;
-        }
     }
 }
 </script>
@@ -453,11 +141,11 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 
-
 .results {
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
+    margin: 5px;
 }
 
 .loader {
@@ -514,6 +202,24 @@ export default {
     margin: auto;
     border-collapse: separate; 
     border-spacing: 0 1em;
+}
+
+.footer {
+    position: fixed;
+    font-family: 'Barlow Condensed', sans-serif;
+    bottom: 0;
+    width: 100%;
+    /* height:60px; */
+    border-top: #000 1px solid;
+    background:#fff;
+}
+
+.attribution {
+    list-style: none;
+}
+
+.attribution-item {
+    padding-bottom: 2px;
 }
 
 </style>

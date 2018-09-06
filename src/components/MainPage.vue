@@ -1,6 +1,11 @@
 <template>
     <div class="main-page">
-        <h1>Museoviraston paikannimet -projekti</h1>
+        <h1 class="title">Museoviraston paikannimet -projekti</h1>
+        <div class="search-input-div">
+            <label for="findNameInput">Nimi:</label>
+            <input id="findNameInput" v-model="nameInputValue" type="text" @keyup.enter="findTopic" placeholder="Esim. Vantaa">
+            <button @click="findTopic">Hae</button>
+        </div>
         <div class="main-toolbar">
             <div class="main-toolbar-buttons">
                 <button
@@ -22,6 +27,7 @@
 <script>
 
 import SearchPage from '@/components/SearchPage'
+import MapPage from '@/components/MapPage'
 import IssuesPage from '@/components/IssuesPage'
 
 export default {
@@ -31,20 +37,26 @@ export default {
             currentTabComponentName: 'SearchPage',
             tabs: [
                 {
-                    name: 'Hakusivu',
+                    name: 'Taulukko',
                     componentName: 'SearchPage'
+                },
+                {
+                    name: 'Kartta',
+                    componentName: 'MapPage'
                 },
                 {
                     name: 'Finto-ehdotukset',
                     componentName: 'IssuesPage'
                 },
             ],
+            nameInputValue: "",
         }
     },
     computed: {
     },
     components: {
         SearchPage,
+        MapPage,
         IssuesPage,
     },
     // beforeRouteEnter (to, from, next) {
@@ -53,6 +65,11 @@ export default {
     //     console.log("created");
     // },
     methods: {
+        findTopic (event) {
+            if (this.nameInputValue.length > 0) {
+                this.$store.dispatch('findTopic', { nameInputValue: this.nameInputValue });
+            }
+        },
     }
 }
 </script>
@@ -63,6 +80,19 @@ export default {
 /* .main-content {
     width: calc(100% - 10px);
 } */
+
+.main-page {
+    width: 100%;
+    height: 100%;
+}
+
+.title {
+    padding-top: 22px;
+}
+
+.search-input-div {
+    padding-bottom: 20px;
+}
 
 .tab-button {
     padding: 6px 12px;
@@ -102,5 +132,6 @@ export default {
     flex: 1 1 60%;
     align-self: flex-end;
 }
+
 
 </style>
