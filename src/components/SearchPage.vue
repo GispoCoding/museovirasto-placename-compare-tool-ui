@@ -8,8 +8,8 @@
                     <li class="results-list-item" v-for="result in placeNames.ysoResults" :key="result.localname + result.lang">
                         <ul class="results-list-item-list">
                             <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="result.uri" target="_blank"><b>{{ result.prefLabel }}</b></a></div></li>
-                            <li class="results-list-item-list-item"><div class="results-list-item-head">Koordinaatit:</div><div class="results-list-item-value">{{ result.coordinateText }}</div></li>
-                            <li class="results-list-item-list-item"><div class="results-list-item-head">Paikanlaji:</div><div class="results-list-item-value">{{ result.placeType }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">MMl-koordinaatit:</div><div class="results-list-item-value">{{ result.coordinateText }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">MML-paikanlaji:</div><div class="results-list-item-value">{{ result.placeType }}</div></li>
                             <li class="results-list-item-list-item"><div class="results-list-item-head">Osa käsitettä:</div><div class="results-list-item-value">
                                     <a v-if="result.broader.name != '-'" :href="result.broader.url" target="_blank">{{ result.broader.name }}</a>
                                     <span v-else>{{ result.broader.name }}</span>
@@ -182,6 +182,7 @@ export default {
 
 .results-list-item-value {
     flex: 0 0 66%;
+    align-self: flex-end;
 }
 
 .vertical-divider {

@@ -298,6 +298,8 @@ export default new Vuex.Store({
                         }
                     }
 
+                    console.log(response.data);
+
                     if (response.data.graph != undefined) {
                         for (var i = 0; i < response.data.graph.length; i++) {
                             if (response.data.graph[i].narrower != undefined &&
@@ -315,6 +317,10 @@ export default new Vuex.Store({
                                 if (response.data.graph[i]["skos:closeMatch"] != undefined) {
                                     // For getting coordinates below
                                     data.closeMatch = response.data.graph[i]["skos:closeMatch"];
+                                }
+                                else if (response.data.graph[i]["closeMatch"] != undefined) {
+                                    // For getting coordinates below
+                                    data.closeMatch = response.data.graph[i]["closeMatch"];
                                 }
                                 if (response.data.graph[i]["skos:note"] != undefined) {
                                     //console.log(response.data.graph[i]["skos:note"]);
@@ -342,16 +348,18 @@ export default new Vuex.Store({
                         // Get coordinates
                         //
 
-                        //console.log(closeMatch);
+                        console.log(data);
 
                         var paikkatiedotURI = null;
-                        for (var i = 0; data.closeMatch.length; i++) {
-                            if (data.closeMatch[i].uri.indexOf("paikkatiedot.fi") != -1) {
-                                //console.log(data.closeMatch[i].uri);
-                                if (data.closeMatch[i].uri.indexOf("paikkatiedot.fi/so/") != -1) {
-                                    paikkatiedotURI = data.closeMatch[i].uri;
+                        if (data.closeMatch != null) {
+                            for (var i = 0; data.closeMatch.length; i++) {
+                                if (data.closeMatch[i].uri.indexOf("paikkatiedot.fi") != -1) {
+                                    //console.log(data.closeMatch[i].uri);
+                                    if (data.closeMatch[i].uri.indexOf("paikkatiedot.fi/so/") != -1) {
+                                        paikkatiedotURI = data.closeMatch[i].uri;
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
 
