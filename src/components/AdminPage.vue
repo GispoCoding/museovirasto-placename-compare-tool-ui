@@ -1,6 +1,8 @@
 <template>
     <div class="admin-page">
         <h2>Nimistön hallinta</h2>
+        <ResultModal v-if="showModal" @close="showModal = false" :result="resultTTL">
+        </ResultModal>
         <div class="results">
             <div class="admin-part">
                 <GridLoader class="loader" :loading="placeNames.loadingNimiarkistoData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
@@ -36,12 +38,15 @@
 import GridLoader from 'vue-spinner/src/GridLoader.vue'
 import axios from 'axios'
 
+import ResultModal from '@/components/ResultModal'
+
 const BASE_URL = "http://localhost:3000/";
 
 export default {
     name: 'AdminPage',
     components: {
-        GridLoader
+        GridLoader,
+        ResultModal
     },
     data () {
         return {
@@ -49,7 +54,9 @@ export default {
             vueSpinnerColor: '#800b8f',
             schemeNameYSO: 'ysopaikat',
             schemeNameNimi: 'nimi',
-            conceptIndex: 1
+            conceptsIndex: 1,
+            showModal: false,
+            resultTTL: '',
         }
     },
     computed: {
@@ -125,7 +132,7 @@ export default {
 
         },
         async createTTLOfTheNimiarkistoItem(item) {
-            var concept = [];
+            var concepts = [];
 
             var P10015 = await this.getNimiarkistoValueForClaim(item, 'P10015');
             console.log('P10015: ' + P10015);
@@ -140,32 +147,42 @@ export default {
             var P10012 = await this.getNimiarkistoValueForClaim(item, 'P10012');
             console.log('P10012: ' + P10012);
 
-            concept.push(this.schemeNameYSO + ':p' + this.conceptIndex++ + ' a skos:Concept ;');
-            //console.log(concept);
+            concepts.push(this.schemeNameYSO + ':p' + this.conceptsIndex++ + ' a skos:Concept ;');
+            //console.log(concepts);
+            var ws = '    ';
             if (P10015 != null && P10013 != null) {
-                concept.push('skos:prefLabel "' + P10015 + ' (' + P10013 + ')"@fi ;');
+                concepts.push(ws + 'skos:prefLabel "' + P10015 + ' (' + P10013 + ')"@fi ;');
             }
-            //console.log(concept);
-            concept.push('rdfs:comment "' + item.descriptions.fi.value + '"@fi ;');
+            //console.log(concepts);
+            concepts.push(ws + 'rdfs:comment "' + item.descriptions.fi.value + '"@fi ;');
             if (P10053 != null) {
-                concept.push('dct:idetifier ' + P10053 + ' ;');
+                concepts.push(ws + 'dct:idetifier ' + P10053 + ' ;');
             }
-            //console.log(concept);
+            //console.log(concepts);
             if (P10009 != null) {
-                concept.push('dct:date ' + P10009 + ' ;');
+                concepts.push(ws + 'dct:date ' + P10009 + ' ;');
             }
-            //console.log(concept);
+            //console.log(concepts);
             if (P10017 != null) {
-                concept.push('dct:creator "' + P10017 + '"@fi ;');
+                concepts.push(ws + 'dct:creator "' + P10017 + '"@fi ;');
             }
-            //console.log(concept);
+            //console.log(concepts);
             if (P10012 != null) {
-                concept.push('geo:hasGeometry [ geo:asWKT "<http://www.opengis.net/def/crs/EPSG/0/4326>Point(' + P10012.latitude + ' ' + P10012.longitude + ')"^^geo:WKTLiteral ] ;');
+                concepts.push(ws + 'geo:hasGeometry [ geo:asWKT "<http://www.opengis.net/def/crs/EPSG/0/4326>Point(' + P10012.latitude + ' ' + P10012.longitude + ')"^^geo:WKTLiteral ] ;');
             }
-            //console.log(concept);
-            concept.push('skos:exactMatch ' + this.schemeNameNimi + ':' + item.id + ' .');
+            //console.log(concepts);
+            concepts.push(ws + 'skos:exactMatch ' + this.schemeNameNimi + ':' + item.id + ' .');
     
-            console.log(concept);
+            console.log(concepts);
+
+            this.showResult(concepts);
+        },
+        showResult(concepts) {
+            this.resultTTL = "";
+            for (var i = 0; i < concepts.length; i++) {
+                this.resultTTL += concepts[i] + "\n";
+            }
+            this.showModal = true;
         },
         getNimiarkistoItemInfo(id) {
 
