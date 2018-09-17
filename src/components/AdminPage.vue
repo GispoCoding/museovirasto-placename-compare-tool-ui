@@ -108,6 +108,10 @@ export default {
                         value = item.claims[claim][0].mainsnak.datavalue.value;
                         resolve(value);
                     }
+                     else if (item.claims[claim][0].mainsnak.datatype == "time") {
+                        value = item.claims[claim][0].mainsnak.datavalue.value.time.split('-')[0].split('+')[1];
+                        resolve(value);
+                    }
                     else {
                         resolve(null);
                     }
@@ -144,11 +148,11 @@ export default {
             //console.log(concept);
             concept.push('rdfs:comment "' + item.descriptions.fi.value + '"@fi ;');
             if (P10053 != null) {
-                concept.push('dct:idetifier "' + P10053 + ' ;');
+                concept.push('dct:idetifier ' + P10053 + ' ;');
             }
             //console.log(concept);
             if (P10009 != null) {
-                concept.push('dct:date "' + P10009 + ' ;');
+                concept.push('dct:date ' + P10009 + ' ;');
             }
             //console.log(concept);
             if (P10017 != null) {
