@@ -28,6 +28,7 @@
 
 import SearchPage from '@/components/SearchPage'
 import MapPage from '@/components/MapPage'
+import AdminPage from '@/components/AdminPage'
 import IssuesPage from '@/components/IssuesPage'
 
 export default {
@@ -45,6 +46,10 @@ export default {
                     componentName: 'MapPage'
                 },
                 {
+                    name: 'Nimistön hallinta',
+                    componentName: 'AdminPage'
+                },
+                {
                     name: 'Finto-ehdotukset',
                     componentName: 'IssuesPage'
                 },
@@ -57,6 +62,7 @@ export default {
     components: {
         SearchPage,
         MapPage,
+        AdminPage,
         IssuesPage,
     },
     // beforeRouteEnter (to, from, next) {

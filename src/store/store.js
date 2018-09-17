@@ -144,7 +144,7 @@ export default new Vuex.Store({
 
                 axios.request(requestConfig).
                     then(function (response) {
-                        console.log(response.data);
+                        //console.log(response.data);
                         // for (var i = 0; i < response.data.length; i++) {
                         //     console.log(response.data[i].paikkaid);
                         // }
@@ -298,7 +298,7 @@ export default new Vuex.Store({
                         }
                     }
 
-                    console.log(response.data);
+                    //console.log(response.data);
 
                     if (response.data.graph != undefined) {
                         for (var i = 0; i < response.data.graph.length; i++) {
@@ -348,7 +348,7 @@ export default new Vuex.Store({
                         // Get coordinates
                         //
 
-                        console.log(data);
+                        //console.log(data);
 
                         var paikkatiedotURI = null;
                         if (data.closeMatch != null) {
