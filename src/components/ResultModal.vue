@@ -9,7 +9,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <textarea rows="40" cols="80" v-model="result">
+                    <textarea rows="20" cols="80" v-model="result">
                     </textarea>
                 </div>
 

@@ -6,7 +6,8 @@
         <div class="results">
             <div class="admin-part">
                 <GridLoader class="loader" :loading="placeNames.loadingNimiarkistoData" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
-                <div v-show="placeNames.nimiarkistoResults.dataDetails.length > 0" class="admin-all-actions"><a href="#" @click.prevent="createTTLVolcabularyOfAllNimiarkistoItems()">Tee kaikista keruumerkinnöistä SKOS-sanasto</a></div>
+                <div v-show="placeNames.nimiarkistoResults.dataDetails.length > 0" class="admin-all-actions"><a href="#" @click.prevent="createTTLVolcabularyOfAllNimiarkistoItems()">Tee kaikista keruumerkinnöistä YSO-paikat-sanasto</a></div>
+                <GridLoader class="loader" :loading="creatingVolcabulary" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
                 <table class="results-table" v-show="placeNames.nimiarkistoResults.dataDetails.length > 0">
                     <tr>
                         <th>Nimiarkiston keruumerkintä</th>
@@ -23,7 +24,7 @@
                         </td>
                         <td>
                             <ul class="results-list-item-list">
-                                <li><a href="#" @click.prevent="createTTLOfTheNimiarkistoItem(result)">Tee merkinnästä YSO-käsite</a></li>
+                                <li><a href="#" @click.prevent="createTTLOfTheNimiarkistoItem(result)">Tee merkinnästä YSO-paikat-käsite</a></li>
                             </ul>
                         </td>
                     </tr>
@@ -52,7 +53,8 @@ export default {
         return {
             vueSpinnerSize: '16px',
             vueSpinnerColor: '#800b8f',
-            schemeNameYSO: 'ysopaikat',
+            creatingVolcabulary: false,
+            schemeNameYSOPlaces: 'ysopaikat',
             schemeNameNimi: 'nimi',
             conceptsIndex: 1,
             showModal: false,
@@ -61,7 +63,7 @@ export default {
     },
     computed: {
         placeNames () {
-            console.log(this.$store.state.placeNames);
+            //console.log(this.$store.state.placeNames);
             return this.$store.state.placeNames;
         }
     },
@@ -103,7 +105,7 @@ export default {
                 if (item.claims[claim] != undefined) {
                     if (item.claims[claim][0].mainsnak.datatype == "wikibase-item") {
                         this.getNimiarkistoItemInfo(item.claims[claim][0].mainsnak.datavalue.value.id).then((data) => {
-                            console.log(data);
+                            //console.log(data);
                             resolve(data[0].labels.fi.value);
                         });
                     }
@@ -128,59 +130,164 @@ export default {
                 }
             });
         },
-        createTTLVolcabularyOfAllNimiarkistoItems() {
+        async createTTLVolcabularyOfAllNimiarkistoItems() {
+            var concepts = [];
+            var collections = [];
 
+            this.creatingVolcabulary = true;
+
+            var items = this.placeNames.nimiarkistoResults.dataDetails;
+            for (var i = 0; i < items.length; i++) {
+                var conceptData = await this.createConceptData(items[i]);
+                concepts.push(conceptData.conceptTriples);
+                var found = false;
+                for (var j = 0; j < collections.length; j++) {
+                    if (collections[j].name == conceptData.collectionPrefLabel) {
+                        collections[j].members.push(conceptData.id);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found && conceptData.collectionPrefLabel != null) {
+                    var collection = {
+                        name: conceptData.collectionPrefLabel,
+                        members: [conceptData.id]
+                    }
+                    collections.push(collection);
+                }
+            }
+
+            this.creatingVolcabulary = false;
+
+            this.showVolcabularyResult(concepts, collections);
+        },
+        showVolcabularyResult(concepts, collections) {
+            this.resultTTL = "";
+            var ws = '    ';
+
+            this.resultTTL += '@prefix dc: <http://purl.org/dc/elements/1.1/> .\n';
+            this.resultTTL += '@prefix dct: <http://purl.org/dc/terms/> .\n';
+            this.resultTTL += '@prefix isothes: <http://purl.org/iso25964/skos-thes#> .\n';
+            this.resultTTL += '@prefix owl: <http://www.w3.org/2002/07/owl#> .\n';
+            this.resultTTL += '@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n';
+            this.resultTTL += '@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n';
+            this.resultTTL += '@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n';
+            this.resultTTL += '@prefix xml: <http://www.w3.org/XML/1998/namespace> .\n';
+            this.resultTTL += '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n';
+            this.resultTTL += '@prefix wd: <http://www.wikidata.org/entity/> .\n';
+            this.resultTTL += '@prefix ysa: <http://www.yso.fi/onto/ysa/> .\n';
+            this.resultTTL += '@prefix allars: <http://www.yso.fi/onto/allars/> .\n';
+            this.resultTTL += '@prefix geo: <http://www.opengis.net/ont/geosparql#> .\n';
+            this.resultTTL += '@prefix skosext: <http://www.ldf.fi/schema/skosext/#> .\n';
+            this.resultTTL += '@prefix ' + this.schemeNameNimi + ': <https://nimiarkisto.fi/wiki/> .\n';
+            this.resultTTL += '@prefix ' + this.schemeNameYSOPlaces + ': <http://www.yso.fi/onto/yso/places> .\n';
+
+            this.resultTTL += '\n';
+            this.resultTTL += '\n';
+
+            this.resultTTL += this.schemeNameYSOPlaces + ': a skos:ConceptScheme ;\n';
+            this.resultTTL += ws + 'skos:prefLabel "Nimiarkisto.fi by Kotus"@en ,\n';
+            this.resultTTL += ws + ws + '"Nimiarkisto.fi, Kotus"@fi ;\n';
+            this.resultTTL += ws + 'dct:title "Nimiarkisto.fi by Kotus"@en ,\n';
+            this.resultTTL += ws + ws + '"Nimiarkisto.fi, Kotus"@fi ;\n';
+            this.resultTTL += ws + 'dct:source <https://nimiarkisto.fi/wiki/> .\n';
+
+            this.resultTTL += '\n';
+            this.resultTTL += '\n';
+
+            for (var i = 0; i < concepts.length; i++) {
+                var conceptTriples = concepts[i];
+                for (var j = 0; j < conceptTriples.length; j++) {
+                    this.resultTTL += conceptTriples[j] + "\n";
+                }
+                this.resultTTL += '\n';
+            }
+
+            this.resultTTL += '\n';
+
+            for (var i = 0; i < collections.length; i++) {
+                this.resultTTL += this.createCollectionTTL(collections[i]);
+                this.resultTTL += '\n';
+            }
+
+            this.showModal = true;
+        },
+        createCollectionTTL(collection) {
+            var TTL = '';
+            var ws = '    ';
+
+            TTL += this.schemeNameYSOPlaces + ':p' + this.conceptsIndex++ + ' a skos:Collection ;\n';
+            TTL += ws + 'skos:prefLabel "' + collection.name + '"@fi ;\n';
+            TTL += ws + 'skos:member ';
+            for (var i = 0; i < collection.members.length; i++) {
+                TTL += collection.members[i] + ', ';
+            }
+            TTL = TTL.substring(0, TTL.length - 2) + ' .\n';
+
+            return TTL;
         },
         async createTTLOfTheNimiarkistoItem(item) {
-            var concepts = [];
+            var conceptData = await this.createConceptData(item);
+
+            this.showResult(conceptData);
+        },
+        async createConceptData(item) {
+            var conceptTriples = [];
 
             var P10015 = await this.getNimiarkistoValueForClaim(item, 'P10015');
-            console.log('P10015: ' + P10015);
+            //console.log('P10015: ' + P10015);
             var P10013 = await this.getNimiarkistoValueForClaim(item, 'P10013');
-            console.log('P10013: ' + P10013);
+            //console.log('P10013: ' + P10013);
             var P10053 = await this.getNimiarkistoValueForClaim(item, 'P10053');
-            console.log('P10053: ' + P10053);
+            //console.log('P10053: ' + P10053);
             var P10009 = await this.getNimiarkistoValueForClaim(item, 'P10009');
-            console.log('P10009: ' + P10009);
+            //console.log('P10009: ' + P10009);
             var P10017 = await this.getNimiarkistoValueForClaim(item, 'P10017');
-            console.log('P10017: ' + P10017);
+            //console.log('P10017: ' + P10017);
             var P10012 = await this.getNimiarkistoValueForClaim(item, 'P10012');
-            console.log('P10012: ' + P10012);
+            //console.log('P10012: ' + P10012);
 
-            concepts.push(this.schemeNameYSO + ':p' + this.conceptsIndex++ + ' a skos:Concept ;');
+            conceptTriples.push(this.schemeNameYSOPlaces + ':p' + this.conceptsIndex + ' a skos:Concept ;');
             //console.log(concepts);
             var ws = '    ';
             if (P10015 != null && P10013 != null) {
-                concepts.push(ws + 'skos:prefLabel "' + P10015 + ' (' + P10013 + ')"@fi ;');
+                conceptTriples.push(ws + 'skos:prefLabel "' + P10015 + ' (' + P10013 + ')"@fi ;');
             }
             //console.log(concepts);
-            concepts.push(ws + 'rdfs:comment "' + item.descriptions.fi.value + '"@fi ;');
+            conceptTriples.push(ws + 'rdfs:comment "' + item.descriptions.fi.value + '"@fi ;');
             if (P10053 != null) {
-                concepts.push(ws + 'dct:idetifier ' + P10053 + ' ;');
+                conceptTriples.push(ws + 'dct:identifier ' + P10053 + ' ;');
             }
             //console.log(concepts);
             if (P10009 != null) {
-                concepts.push(ws + 'dct:date ' + P10009 + ' ;');
+                conceptTriples.push(ws + 'dct:date ' + P10009 + ' ;');
             }
             //console.log(concepts);
             if (P10017 != null) {
-                concepts.push(ws + 'dct:creator "' + P10017 + '"@fi ;');
+                conceptTriples.push(ws + 'dct:creator "' + P10017 + '"@fi ;');
             }
             //console.log(concepts);
             if (P10012 != null) {
-                concepts.push(ws + 'geo:hasGeometry [ geo:asWKT "<http://www.opengis.net/def/crs/EPSG/0/4326>Point(' + P10012.latitude + ' ' + P10012.longitude + ')"^^geo:WKTLiteral ] ;');
+                conceptTriples.push(ws + 'geo:hasGeometry [ geo:asWKT "<http://www.opengis.net/def/crs/EPSG/0/4326>Point(' + P10012.latitude + ' ' + P10012.longitude + ')"^^geo:WKTLiteral ] ;');
             }
             //console.log(concepts);
-            concepts.push(ws + 'skos:exactMatch ' + this.schemeNameNimi + ':' + item.id + ' .');
+            conceptTriples.push(ws + 'skos:exactMatch ' + this.schemeNameNimi + ':' + item.id + ' .');
     
-            console.log(concepts);
+            //console.log(conceptTriples);
 
-            this.showResult(concepts);
+            var P10016 = await this.getNimiarkistoValueForClaim(item, 'P10016');
+            //console.log('P10016: ' + P10016);
+
+            return {
+                id: this.schemeNameYSOPlaces + ':p' + this.conceptsIndex++,
+                collectionPrefLabel: P10016,
+                conceptTriples: conceptTriples
+            }
         },
-        showResult(concepts) {
+        showResult(conceptData) {
             this.resultTTL = "";
-            for (var i = 0; i < concepts.length; i++) {
-                this.resultTTL += concepts[i] + "\n";
+            for (var i = 0; i < conceptData.conceptTriples.length; i++) {
+                this.resultTTL += conceptData.conceptTriples[i] + "\n";
             }
             this.showModal = true;
         },
