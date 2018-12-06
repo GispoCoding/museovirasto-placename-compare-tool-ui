@@ -25,6 +25,7 @@
 </template>
 
 <script>
+import store from '@/store/store'
 
 import SearchPage from '@/components/SearchPage'
 import MapPage from '@/components/MapPage'
@@ -70,9 +71,28 @@ export default {
     // created () {
     //     console.log("created");
     // },
+    beforeRouteEnter (to, from, next) {
+        //console.log(to);
+        var text = to.params.text;
+        if (text != undefined) {
+            document.title = document.title + ' - ' + text;
+            store.dispatch('findTopic', { nameInputValue: text });
+        }
+        next();
+    },
+    mounted: function () {
+        this.$nextTick(function () {
+            //console.log(window.location);
+            var text = window.location.pathname.split("/")[1];
+            //console.log(text);
+            this.nameInputValue = text;
+        })
+    },
     methods: {
         findTopic (event) {
             if (this.nameInputValue.length > 0) {
+                window.location.pathname = this.nameInputValue + '/';
+                document.title = document.title + ' - ' + this.nameInputValue;
                 this.$store.dispatch('findTopic', { nameInputValue: this.nameInputValue });
             }
         },

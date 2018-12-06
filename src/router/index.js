@@ -8,9 +8,10 @@ Vue.use(Router)
 Vue.use(olmap)
 
 export default new Router({
+  mode: 'history',
   routes: [
     {
-      path: '/',
+      path: '/:text?',
       name: 'MainPage',
       component: MainPage
     }
