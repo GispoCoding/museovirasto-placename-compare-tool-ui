@@ -23,7 +23,8 @@ export default {
             center: [27.1, 65.2],
             ysoLayer: null,
             nlsLayer: null,
-            nimiarkistoLayer: null
+            nimiarkistoLayer: null,
+            wikidataLayer: null
         }
     },
     created () {
@@ -123,6 +124,7 @@ export default {
             this.createNLSMapFeatures();
             this.createYSOFeatures();
             this.createNimiarkistoFeatures();
+            this.createWikidataFeatures();
         },
         createNimiarkistoFeatures() {
             var ol = this.$ol;
@@ -168,8 +170,57 @@ export default {
                 source: vectorSource,
                 zIndex: 1000,
             });
+            this.nimiarkistoLayer.setZIndex(3);
             console.log("adding nimiarkisto.fi map layer");
             this.map.addLayer(this.nimiarkistoLayer);
+        },
+        createWikidataFeatures() {
+            var ol = this.$ol;
+            var wikidataFeatures = [];
+
+            var iconStyle = new ol.style.Style({
+                image: new ol.style.Icon({
+                    anchor: [0.5, 1],
+                    anchorXUnits: 'fraction',
+                    anchorYUnits: 'fraction',
+                    src: "/static/images/mapiconscollection-markers/assortment-4.png",
+                    scale: 0.8
+                })
+            });
+
+            for (var i = 0; i < this.placeNames.wikidataResults.dataDetails.length; i++) {
+                var item = this.placeNames.wikidataResults.dataDetails[i];
+                //console.log(item);
+                if (item.claims.P625 != undefined) {
+                    var coordinates = item.claims.P625[0].mainsnak.datavalue.value;
+                    //console.log(item.geom.coordinates);
+                    var iconFeature = new ol.Feature(
+                        {
+                            geometry: new ol.geom.Point(ol.proj.fromLonLat([coordinates.longitude, coordinates.latitude])),
+                            item: {
+                                html: this.createWikidataPopupHtml(item)
+                            }
+                        }
+                    );
+                    iconFeature.setStyle(iconStyle);
+                    wikidataFeatures.push(iconFeature);
+                }
+            }
+
+            var vectorSource = new ol.source.Vector({
+                features: wikidataFeatures
+            });
+            if (this.wikidataLayer != null) {
+                this.map.removeLayer(this.wikidataLayer);
+                this.wikidataLayer = null;
+            }
+            this.wikidataLayer = new ol.layer.Vector({
+                source: vectorSource,
+                zIndex: 1000,
+            });
+            this.wikidataLayer.setZIndex(1);
+            console.log("adding Wikidata map layer");
+            this.map.addLayer(this.wikidataLayer);
         },
         createYSOFeatures() {
             var ol = this.$ol;
@@ -188,17 +239,19 @@ export default {
             for (var i = 0; i < this.placeNames.ysoResults.length; i++) {
                 var item = this.placeNames.ysoResults[i];
                 //console.log(item);
-                //console.log(item.geom.coordinates);
-                var iconFeature = new ol.Feature(
-                    {
-                        geometry: new ol.geom.Point(ol.proj.fromLonLat([item.coordinates.lon, item.coordinates.lat])),
-                        item: {
-                            html: this.createYSOPopupHtml(item)
+                //console.log(item.coordinates);
+                if (item.coordinates.lon != null && item.coordinates.lat != null) {
+                    var iconFeature = new ol.Feature(
+                        {
+                            geometry: new ol.geom.Point(ol.proj.fromLonLat([item.coordinates.lon, item.coordinates.lat])),
+                            item: {
+                                html: this.createYSOPopupHtml(item)
+                            }
                         }
-                    }
-                );
-                iconFeature.setStyle(iconStyle);
-                ysoFeatures.push(iconFeature);
+                    );
+                    iconFeature.setStyle(iconStyle);
+                    ysoFeatures.push(iconFeature);
+                }
             }
 
             var vectorSource = new ol.source.Vector({
@@ -212,6 +265,7 @@ export default {
                 source: vectorSource,
                 zIndex: 1000,
             });
+            this.ysoLayer.setZIndex(4);
             console.log("adding YSO-paikat map layer");
             this.map.addLayer(this.ysoLayer);
         },
@@ -256,6 +310,7 @@ export default {
                 source: vectorSource,
                 zIndex: 1000,
             });
+            this.nlsLayer.setZIndex(2);
             console.log("adding NLS map layer");
             this.map.addLayer(this.nlsLayer);
         },
@@ -264,6 +319,13 @@ export default {
             html += '<p>Koordinaatit: ' + this.getNimiarkistoCoordinates(item) + '</p>';
             html += '<p>Paikanlaji:' + this.getNimiarkistoCollectedPlaceType(item) + '</p>';
             html += '<p>Tekn info URL:<a href="https://nimiarkisto.fi/wiki/' + item.title + '" target="_blank">' + item.title + '</p>';
+            return html;
+        },
+        createWikidataPopupHtml (item) {
+            var html = '<p><b>Termi:</b><a href="https://www.wikidata.org/wiki/' + item.id +'" target="_blank"><b>' + this.getWikidataTitle(item) + '</b></a></p>';
+            html += '<p>Koordinaatit: ' + this.getWikidataCoordinates(item) + '</p>';
+            html += '<p>Tyyppi: ' + this.getWikidataInstanceOf(item) + '</p>';
+            html += '<p>Kuvaus: ' + this.getWikidataDescription(item) + '</p>';;
             return html;
         },
         createYSOPopupHtml (item) {
@@ -288,7 +350,7 @@ export default {
             html += '<p>Kunta: ' + item.kunta +  '</p>';
             return html;
         },
-        getInstanceOf (item) {
+        getNimiarkistoInstanceOf (item) {
             var text = "";
             var id = item.claims.P31[0].mainsnak.datavalue.value.id;
             for (var i = 0; i < this.placeNames.nimiarkistoResults.labels.length; i++) {
@@ -318,6 +380,67 @@ export default {
             }
 
             return coordText;
+        },
+        getWikidataTitle (item) {
+            var text = "";
+
+            if (item.labels.fi != undefined) {
+                text = item.labels.fi.value + " (" + item.id + ")";
+            }
+            else if (item.labels.en != undefined) {
+                text = item.labels.en.value + " (" + item.id + ")";
+            }
+            else {
+                text = item.id;
+            }
+
+            return text;
+        },
+        getWikidataInstanceOf (item) {
+            // console.log(item);
+            var text = "";
+            // console.log(item.claims.P31);
+            for (var j = 0; j < item.claims.P31.length; j++) {
+                var id = item.claims.P31[j].mainsnak.datavalue.value.id;
+                for (var i = 0; i < this.placeNames.wikidataResults.labels.length; i++) {
+                    var label = this.placeNames.wikidataResults.labels[i];
+                    if (id == label.id) {
+                        text += label.labels.fi != undefined ? label.labels.fi.value : label.labels.en.value;
+                        text += ", ";
+                        // console.log(label.labels);
+                        break;
+                    }
+                }
+            }
+            text = text.slice(0, -1);
+            text = text.slice(0, -1);
+            return text;
+        },
+        getWikidataCoordinates (item) {
+            var coordText = "-";
+
+            if (item.claims.P625 != undefined) {
+                // console.log(item.claims.P625[0].mainsnak);
+                var value = item.claims.P625[0].mainsnak.datavalue.value;
+                coordText = value.longitude + ", " + value.latitude;
+            }
+
+            return coordText;
+        },
+        getWikidataDescription (item) {
+            var text = "";
+            //console.log(item);
+            if (item.descriptions.fi != undefined) {
+                text = item.descriptions.fi.value;
+            }
+            else if (item.descriptions.en != undefined) {
+                text = item.descriptions.en.value;
+            }
+            else {
+                text = "-";
+            }
+
+            return text;
         },
         getNLSCoordinates (item) {
             var coordText = "";
