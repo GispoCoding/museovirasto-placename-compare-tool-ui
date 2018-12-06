@@ -405,9 +405,17 @@ export default {
                 for (var i = 0; i < this.placeNames.wikidataResults.labels.length; i++) {
                     var label = this.placeNames.wikidataResults.labels[i];
                     if (id == label.id) {
-                        text += label.labels.fi != undefined ? label.labels.fi.value : label.labels.en.value;
+                        //console.log(label);
+                        if (label.labels.fi != undefined) {
+                            text += label.labels.fi.value;
+                        }
+                        else if (label.labels.en != undefined) {
+                            text += label.labels.en.value;
+                        }
+                        else {
+                            text += label.id;
+                        }
                         text += ", ";
-                        // console.log(label.labels);
                         break;
                     }
                 }
