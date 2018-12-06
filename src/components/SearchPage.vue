@@ -59,6 +59,24 @@
                     -
                 </div>
             </div>
+            <div class="vertical-divider"></div>
+            <div class="results-part">
+                <h2>Wikidata</h2>
+                <GridLoader class="loader" :loading="placeNames.loadingWikidata" :color="vueSpinnerColor" :size="vueSpinnerSize"></GridLoader>
+                <ul class="results-list" v-if="placeNames.wikidataResults.dataDetails.length > 0">
+                    <li class="results-list-item" v-for="result in placeNames.wikidataResults.dataDetails" :key="result.id">
+                        <ul class="results-list-item-list">
+                            <li class="results-list-item-list-item"><div class="results-list-item-head"><b>Termi:</b></div><div class="results-list-item-value"><a :href="'https://www.wikidata.org/wiki/' + result.id" target="_blank"><b>{{ getWikidataTitle(result) }}</b></a></div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Koordinaatit:</div><div class="results-list-item-value">{{ getWikidataCoordinates(result) }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Tyyppi:</div><div class="results-list-item-value">{{ getWikidataInstanceOf(result) }}</div></li>
+                            <li class="results-list-item-list-item"><div class="results-list-item-head">Kuvaus:</div><div class="results-list-item-value">{{ getWikidataDescription(result) }}</div></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div v-else-if="!placeNames.loadingWikidata">
+                    -
+                </div>
+            </div>
         </div>
         <div class="footer">
             <p>Hyödyntää:</p>
@@ -123,6 +141,67 @@ export default {
             }
 
             return coordText;
+        },
+        getWikidataTitle (item) {
+            var text = "";
+
+            if (item.labels.fi != undefined) {
+                text = item.labels.fi.value + " (" + item.id + ")";
+            }
+            else if (item.labels.en != undefined) {
+                text = item.labels.en.value + " (" + item.id + ")";
+            }
+            else {
+                text = item.id;
+            }
+
+            return text;
+        },
+        getWikidataInstanceOf (item) {
+            // console.log(item);
+            var text = "";
+            // console.log(item.claims.P31);
+            for (var j = 0; j < item.claims.P31.length; j++) {
+                var id = item.claims.P31[j].mainsnak.datavalue.value.id;
+                for (var i = 0; i < this.placeNames.wikidataResults.labels.length; i++) {
+                    var label = this.placeNames.wikidataResults.labels[i];
+                    if (id == label.id) {
+                        text += label.labels.fi != undefined ? label.labels.fi.value : label.labels.en.value;
+                        text += ", ";
+                        // console.log(label.labels);
+                        break;
+                    }
+                }
+            }
+            text = text.slice(0, -1);
+            text = text.slice(0, -1);
+            return text;
+        },
+        getWikidataCoordinates (item) {
+            var coordText = "-";
+
+            if (item.claims.P625 != undefined) {
+                // console.log(item.claims.P625[0].mainsnak);
+                var value = item.claims.P625[0].mainsnak.datavalue.value;
+                coordText = value.longitude + ", " + value.latitude;
+            }
+
+            return coordText;
+        },
+        getWikidataDescription (item) {
+            var text = "";
+            //console.log(item);
+            if (item.descriptions.fi != undefined) {
+                text = item.descriptions.fi.value;
+            }
+            else if (item.descriptions.en != undefined) {
+                text = item.descriptions.en.value;
+            }
+            else {
+                text = "-";
+            }
+
+            return text;
         },
         getNLSCoordinates (item) {
             var coordText = "";
@@ -192,7 +271,7 @@ export default {
 }
 
 .results-part {
-    flex: 1 1 33%;
+    flex: 1 1 25%;
     display: flex;
     align-self: flex-start;
     flex-direction: column;

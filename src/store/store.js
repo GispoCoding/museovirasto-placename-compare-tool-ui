@@ -14,10 +14,15 @@ const placeNames = {
         dataDetails: [],
         labels: []
     },
+    wikidataResults: {
+        dataDetails: [],
+        labels: []
+    },
     ysoResults: [],
     nlsResults: [],
     loadingYSOData: false,
     loadingNimiarkistoData: false,
+    loadingWikidata: false,
     loadingNLSData: false,
 }
 
@@ -29,6 +34,8 @@ export default new Vuex.Store({
         resetPlaceNames(state) {
             state.placeNames.nimiarkistoResults.dataDetails = [];
             state.placeNames.nimiarkistoResults.labels = [];
+            state.placeNames.wikidataResults.dataDetails = [];
+            state.placeNames.wikidataResults.labels = [];
             state.placeNames.ysoResults = [];
         },
         setLoadingYSOData(state, value) {
@@ -106,6 +113,15 @@ export default new Vuex.Store({
         setNimiarkistoResultDataDetails(state, dataDetails) {
             state.placeNames.nimiarkistoResults.dataDetails = dataDetails;
         },
+        setLoadingWikidata(state, value) {
+            state.placeNames.loadingWikidata = value;
+        },
+        setWikidataResultLabels(state, labels) {
+            state.placeNames.wikidataResults.labels = labels;
+        },
+        setWikidataResultDataDetails(state, dataDetails) {
+            state.placeNames.wikidataResults.dataDetails = dataDetails;
+        },
         setLoadingNLSData(state, value) {
             state.placeNames.loadingNLSData = value;
         },
@@ -119,6 +135,9 @@ export default new Vuex.Store({
 
             dispatch('searchFromNimiarkisto', { nameInputValue: params.nameInputValue }).then((result) => {
                 // commit('setNimiarkistoResults', result);
+            });
+            dispatch('searchFromWikidata', { nameInputValue: params.nameInputValue }).then((result) => {
+                // commit('setWikidataResults', result);
             });
             dispatch('searchFromFinto', { nameInputValue: params.nameInputValue }).then((result) => {
                 // commit('setYSOResults', result);
@@ -197,6 +216,48 @@ export default new Vuex.Store({
                     }).catch(function (error) {
                         console.log(error);
                         commit('setLoadingNimiarkistoData', false);
+                        reject(error);
+                    });
+            });
+        },
+        async searchFromWikidata ({dispatch, commit}, params) {
+            
+            return new Promise((resolve, reject) => {
+
+                commit('setLoadingWikidata', true);
+
+                var requestConfig = {
+                    baseURL: BASE_URL,
+                    url: "/wikidata",
+                    method: "get",
+                    params: {
+                        text: params.nameInputValue,
+                    }
+                };
+
+                axios.request(requestConfig).
+                    then(function (response) {
+                        //console.log(response.data);
+                        
+                        commit('setWikidataResultLabels', response.data.labels);
+
+                        var dataDetails = [];
+
+                        response.data.dataDetails.forEach(dataDetail => {
+                        
+                            if (dataDetail.claims.P31 != undefined) {
+                                dataDetails.push(dataDetail);
+                            }
+                        });
+
+                        commit('setLoadingWikidata', false);
+                        commit('setWikidataResultDataDetails', dataDetails);
+
+                        resolve(response.data);
+                        
+                    }).catch(function (error) {
+                        console.log(error);
+                        commit('setLoadingWikidata', false);
                         reject(error);
                     });
             });
