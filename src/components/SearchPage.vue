@@ -83,7 +83,8 @@
             <ul class="attribution">
                 <li class="attribution-item">Maanmittauslaitoksen paikannimi-aineistoa, Maanmittauslaitos, 08/2018, <a href="https://www.maanmittauslaitos.fi/avoindata-lisenssi-cc40" target="_blank">CC-BY-4.0</a></li>
                 <li class="attribution-item">Finton <a href="http://finto.fi/yso-paikat/fi/" target="_blank">YSO-paikkojen</a> aineistoja</li>
-                <li class="attribution-item">Kotimaisten kielten keskuksen <a href="https://nimiarkisto.fi/" target="_blank">nimiarkisto.fi</a>-aineistoja</li>
+                <li class="attribution-item">Kotimaisten kielten keskuksen <a href="https://nimiarkisto.fi/" target="_blank">nimiarkisto.fi</a>-aineistoja, <a href="https://creativecommons.org/licenses/by/4.0/legalcode.fi" target="_blank">CC-BY-4.0</a>, <a href="https://nimiarkisto.fi/wiki/Nimiarkisto:Tietosuojak%C3%A4yt%C3%A4nt%C3%B6" target="_blank">lisätietoja Nimiarkiston lisensoinnista</a></li>
+                <li class="attribution-item"><a href="https://www.wikidata.org/" target="_blank">Wikidata</a>-aineistoja, CC0 / <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank">CC BY-SA 3.0</a>, <a href="https://www.wikidata.org/wiki/Wikidata:Licensing" target="_blank">lisätietoja Wikidatan lisensoinnista</a></li>
                 <li class="attribution-item"><a href="https://mapicons.mapsmarker.com/" target="_blank"><img class="size-full wp-image-1381 alignnone" title="miclogo-88x31" src="/static/images/mapiconscollection-markers/miclogo-88x31.gif" alt="" width="88" height="31"></a></li>
             </ul>
         </div>
