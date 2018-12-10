@@ -85,7 +85,7 @@ export default {
             //console.log(window.location);
             var text = window.location.pathname.split("/")[1];
             //console.log(text);
-            this.nameInputValue = text;
+            this.nameInputValue = decodeURI(text);
         })
     },
     methods: {
