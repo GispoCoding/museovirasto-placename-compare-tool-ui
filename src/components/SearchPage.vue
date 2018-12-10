@@ -40,7 +40,7 @@
                 <div v-else-if="!placeNames.loadingNimiarkistoData">
                     -
                 </div>
-                <div v-if="placeNames.wikidataResults.dataDetails.length > 500">
+                <div v-if="placeNames.nimiarkistoResults.dataDetails.length > 500">
                     <p>Tuloksia näytettiin {{ placeNames.nimiarkistoResults.dataDetails.length }}, mutta niitä voi olla enemmän.</p>
                 </div>
             </div>
